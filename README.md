@@ -13,7 +13,7 @@
               to vertex2
 
    	@sources:
-    			   1. Cormen, Thomas H.; Leiserson, Charles E.; Rivest, Ronald L.; Stein,
+    		 1. Cormen, Thomas H.; Leiserson, Charles E.; Rivest, Ronald L.; Stein,
     		   Clifford. Introduction to Algorithms. — 3rd. — MIT Press, 2009.
               ISBN 0-262-03384-4.
                  2. Sedgewick, Robert (2002). Algorithms, 3rd Edition, in C++, Part 5:
