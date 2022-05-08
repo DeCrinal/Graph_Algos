@@ -7,6 +7,8 @@
 #include<vector>
 #include<algorithm>
 #include<random>
+#include<regex>
+#include<queue>
 #include "graph.h"
 #include "algs.h"
 #endif // INCLUDES_H

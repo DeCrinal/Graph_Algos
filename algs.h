@@ -20,6 +20,9 @@
 #ifndef ALGS_H
 #define ALGS_H
 #include"includes.h"
-
 int lognormal_rand_generator();
+int binomial_rand_generator();
+bool get_number(int&n,int min, int max,std::string info);
+bool get_decision(std::string &str, std::string info);
+int to_call_menu();
 #endif // ALGS_H

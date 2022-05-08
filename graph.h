@@ -30,31 +30,156 @@ struct Edge;
 class Graph
 {
 private:
-    int Vcnt, Ecnt;
-    bool is_directed;
-    std::vector<std::vector<bool>>adj;
-    std::vector<std::vector<int>>weights;
+    int Vcnt, Ecnt;			//1
+    bool is_directed;		//1
+    bool is_all_nonnegative;
+    std::vector<std::vector<bool>>adj;	//1
+    std::vector<std::vector<int>>weights;//1
+
+    std::vector<std::vector<int>>weights_with_blocks;
+    std::vector<int>predecessor;
+    std::vector<int>destination;
+
+    std::vector<std::vector<int>>capacity;
+    std::vector<std::vector<int>>costs;
 public:
+    Graph();
     Graph(int max_vertex,bool is_directed);
+    Graph(const Graph&graph);//1
     ~Graph();
-    int V()const;//returns amount of vertexes
-    int E() const;//returns amount of edges
-    bool directed() const;//returns if graph directed
-    void insert (Edge edge);//insert edge to graph
-    void remove (Edge edge);//remove edge from graph
-    void edit(Edge edge, int weight);//insert weith of edge
-    bool edge(int vertex1, int vertex2);//returns if there is an certain edge in graph
+    int V()const;//returns amount of vertexes //1
+    int E() const;//returns amount of edges		//1
+    bool directed() const;//returns if graph directed //1
+    bool nonnegative() const; //returns if all elements are non-negative
+    void insert (Edge edge);//insert edge to graph			//1
+    void remove (Edge edge);//remove edge from graph	 	//1
+    void edit(Edge edge, int weight);//insert weith of edge//1
+    bool edge(int vertex1, int vertex2);//returns if there is an certain edge in graph//1
     class adjIterator;//typical iterator
     friend class adjIterator;
-    void print_graph();//prints graph in matrix view
-    void print_weights();//print weights of edges in matrix view
+    void print_graph();//prints graph in matrix view //1
+    void print_weights();//print weights of edges in matrix view //1
+    void print_destination();
+    void print_predecessor();
+    void print_capacity();
+    void print_costs();
     int shimbel_min(std::vector<int>arr_for_min);//additional for generate_shimbel()
-    std::vector<std::vector<int>> generate_shimbel(int degree);//generate shimbell matrix
+    int shimbel_max(std::vector<int>arr_for_max);//additional for generate_shimbel()
+    std::vector<std::vector<int>> generate_shimbel(int degree, std::string min_or_max);//generate shimbell matrix
+    Graph operator=(const Graph&graph);
 
-    /*returns if there is a way between vertex1 and vertex2*/
+    /*returns if there is a way between temp_graph;
+            break;vertex1 and vertex2*/
     bool is_way_between(int v1, int v2, std::vector<bool>visited /*,
-                        std::vector<std::vector<int>> matrix*/, int &amount);
+                        std::vector<std::vector<int>> matrix*/, int &amount); 	//1
+    bool is_positive_way(int v1, int v2, std::vector<std::vector<int>>&ost_net,
+                         std::vector<std::vector<int>>&potok_matr,int&min, int&res_max_potok, std::vector<bool>&visisited,
+                         int &delMeCounter, bool &is_ost_changed);
+    void initialize_single_source(int source_vertex);
+    void relax(int vertex1, int vertex2);
+    bool bellman_ford(int source_vertex);
+    void dijkstra(int source_vertex);
+    void floyd_uorshall();
+    void set_edges_capacity();//analogical
+    void set_edges_costs();//analogical
+    void set_edges_weight();//analogical
+
+    int ford_falkerson();
 };
 void fill_graph(Graph &G, int E,std::vector<int>arr);//fill graph with user's values
-void set_edges_weight(Graph &G);//analogical
+
+/*------------------------------------------------UNUSED PART-----------------------------------------*/
+/*Priority queue. This class uses partly ordered full tree with multy-brances*/
+
+/*Remove_minimum - d*Log_{d}V*/
+/*Decrease_the_key - Log_{d}V*/
+template <class keyType> class PQi{
+    int d, N;
+    std::vector<int>pq, qp;
+    const std::vector<keyType> &a;
+    void exch(int i, int j){
+        int t = pq[i];
+        pq[i] = pq[j];
+        pq[j] = t;
+        qp[pq[i]]=i;
+        qp[pq[j]]=j;
+    }
+    void fixUp(int k){
+        while(k>1 && a[pq[(k+d-2)/d]]>a[pq[k]]){
+            exch(k,(k+d-2)/d);
+            k = (k+d-2)/d;
+        }
+    }
+    void fixDown(int k, int N){
+        int j;
+        while((j=d*(k-1)+2)<=N)
+        {
+            for(int i = j+1; i<j+d && i<=N;i++){
+                if(a[pq[j]] > a[pq[i]]) { j=i; }
+            }
+            if(!(a[pq[k]] > a[pq[j]])) break;
+            exch(k,j);
+            k = j;
+        }
+    }
+public:
+    PQi(int N, const std::vector<keyType> &a, int d = 3):
+        a(a), pq(N+1,0), qp(N+1,0), N(0), d(d){};
+    int empty() const  {return N ==0;};
+    void insert(int v){
+        pq[++N] = v;
+        qp[v] = N;
+        fixUp(N);
+    }
+    int getmin(){
+        exch(1,N);
+        fixDown(1,N-1);
+        return pq[N--];
+    }
+    void lower(int k )
+    {
+        fixUp(qp[k]);
+    }
+};
+/*Minimal spanning forest, p.243 Sedjwik*/
+//mst - rebra dereva
+//fr - samoe korotkoe derevo, soedinyayushee nedrevesnie vershini s derevov
+//wt - dlina etogo rebra
+template <class Graph, class Edge> class MST{
+   const Graph &G;
+   std::vector<double> wt;
+   std::vector<Edge *> fr, mst;
+public:
+   MST(const Graph &G):G(G),
+       mst(G.V()), wt(G.V(), G.V()), fr(G.V())
+   {
+       int min = -1;
+       for(int v = 0;  min!=0; v = min)
+       {
+           min = 0;
+           for(int w = 1; w < G.V();w++){
+               if(mst[w]==0){
+                   double P;
+                   Edge* e = G.edge(v,w);
+                   if(e){
+                       if((P = e->wt())<wt[w]){
+                           wt[w] = P;
+                           fr[w] = e; }
+                       if(wt[w]<wt[min]){ min = w; }
+                   }
+               }
+           }
+           if(min){
+               mst[min]=fr[min];
+           }
+       }
+   }
+   void show(){
+       for(int v = 1; v<G.V();v++){
+           if(mst[v]) mst[v]->show();
+       }
+   }
+};
+/*------------------------------------------------UNUSED PART-----------------------------------------*/
+
 #endif // GRAPH_H
