@@ -27,21 +27,37 @@
 #define GRAPH_H
 #include"includes.h"
 struct Edge;
+class edge_v2 {
+    int a, b, cost;
+public:
+    edge_v2(int m_a, int m_b, int m_cost) { a = m_a; b = m_b; cost = m_cost; }
+    int getA() { return a; }
+    int getB() { return b; }
+    int getCost() { return cost; }
+    bool operator < (const edge_v2& other) { return cost < other.cost; }
+};
 class Graph
 {
 private:
     int Vcnt, Ecnt;			//1
     bool is_directed;		//1
     bool is_all_nonnegative;
-    std::vector<std::vector<bool>>adj;	//1
+    std::vector<std::vector<int>>adj;	//1
+
+
+
     std::vector<std::vector<int>>weights;//1
 
-    std::vector<std::vector<int>>weights_with_blocks;
+    std::vector<std::vector<int>>weights_with_INF;
     std::vector<int>predecessor;
     std::vector<int>destination;
 
+
     std::vector<std::vector<int>>capacity;
+    //std::vector<std::vector<int>>costs_with_INF;
     std::vector<std::vector<int>>costs;
+
+    std::vector<Edge>edges;
 public:
     Graph();
     Graph(int max_vertex,bool is_directed);
@@ -63,6 +79,8 @@ public:
     void print_predecessor();
     void print_capacity();
     void print_costs();
+    std::vector<std::vector<int>>&get_weights_with_INF();
+    std::vector<std::vector<int>>&get_adj();
     int shimbel_min(std::vector<int>arr_for_min);//additional for generate_shimbel()
     int shimbel_max(std::vector<int>arr_for_max);//additional for generate_shimbel()
     std::vector<std::vector<int>> generate_shimbel(int degree, std::string min_or_max);//generate shimbell matrix
@@ -74,20 +92,43 @@ public:
                         std::vector<std::vector<int>> matrix*/, int &amount); 	//1
     bool is_positive_way(int v1, int v2, std::vector<std::vector<int>>&ost_net,
                          std::vector<std::vector<int>>&potok_matr,int&min, int&res_max_potok, std::vector<bool>&visisited,
-                         int &delMeCounter, bool &is_ost_changed);
+                         bool &is_ost_changed);
     void initialize_single_source(int source_vertex);
-    void relax(int vertex1, int vertex2);
-    bool bellman_ford(int source_vertex);
+    void relax(int vertex1, int vertex2,std::vector<std::vector<int>>&matrix);
+    bool bellman_ford(std::vector<std::vector<int>>&matrix, int source_vertex, bool is_print);
     void dijkstra(int source_vertex);
     void floyd_uorshall();
     void set_edges_capacity();//analogical
     void set_edges_costs();//analogical
     void set_edges_weight();//analogical
-
     int ford_falkerson();
-};
-void fill_graph(Graph &G, int E,std::vector<int>arr);//fill graph with user's values
 
+    int min_cost_flow();// k - needed bundwidth
+    std::vector<std::set<int>>*prim(std::vector<std::vector<int>>&matr_adj,
+                      std::vector<std::vector<int>>&matr_weight);
+    std::vector<std::set<int>>* kruskal(std::vector<std::vector<int>>& matr_adj,
+                    std::vector<std::vector<int>>& weight_matr);
+    std::vector<int>generate_path_by_predcessor();
+    void prufer_coding(std::vector<std::set<int>>*ostotv, std::vector<int>&prufer_code);
+    void prufer_encoding(std::vector<std::set<int>>* ostov, std::vector<int>& pruferCode);
+};
+void kirhgof(std::vector<std::vector<int>>& arr,
+             std::vector<std::vector<int>>& matrixVesov);
+void fill_graph(Graph &G, int E,std::vector<int>arr);//fill graph with user's values
+void swap_to_unorientied(std::vector<std::vector<int>>&matr, int value_of_block);
+void swap_to_orientied(std::vector<std::vector<int>>&matr, int value_of_block);
+void init_with_null(std::vector<std::vector<int>>&matr);
+void init_with_INF(std::vector<std::vector<int>>&matr);
+
+int euler(std::vector<std::vector<int>> gr);
+void euler_graph_true(std::vector<std::vector<int>> EulerGr);
+void is_euler(std::vector<std::vector<int>>& EulerGr);
+void is_gamilton_graph(std::vector<std::vector<int>>& GamGr,
+               std::vector<std::pair<int, int>>& path);
+bool gamilton(std::vector<std::vector<int>>& GamGr, std::vector<std::pair<int, int>>& path,
+          bool print);
+void is_gam(std::vector<std::vector<int>>& GamGr, std::vector<std::pair<int, int>>& path);
+void TSP(std::vector<std::vector<int>>& GamGr);
 /*------------------------------------------------UNUSED PART-----------------------------------------*/
 /*Priority queue. This class uses partly ordered full tree with multy-brances*/
 

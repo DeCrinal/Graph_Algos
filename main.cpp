@@ -29,10 +29,16 @@
 #include "includes.h"
 using namespace std;
 
+const int INF = (__INT32_MAX__)/2-1;
 int main()
 {
     int op, Vam;
     Graph dir_graph;
+    std::vector<int>prufer_code;
+    std::vector<std::set<int>>*ostov = nullptr;
+    std::vector<std::vector<int>> EulerGr;
+    std::vector<std::vector<int>> GamGr;
+    std::vector<pair<int, int>> path;
     do{
         op = to_call_menu();
         switch(op){
@@ -41,7 +47,7 @@ int main()
             int Vam;
 
             //std::cin>>Vam;
-            while(!get_number(Vam, 2, 40, "Input amount of vertex: "));
+            while(!get_number(Vam, 2, 6000, "Input amount of vertex: "));
             for(int i = 0; i<Vam-1; i++){
                 //arr.push_back(lognormal_rand_generator());
                 arr.push_back(lognormal_rand_generator());
@@ -62,7 +68,13 @@ int main()
                  sum_edges+=arr[i];
             }
             fill_graph(temp_graph,sum_edges,arr);
+            temp_graph.set_edges_weight();
+            temp_graph.set_edges_capacity();
+            temp_graph.set_edges_costs();
             dir_graph=temp_graph;
+            dir_graph.print_weights();
+            dir_graph.print_capacity();
+            dir_graph.print_costs();
             break;
         }
         case(1):												//Print graph
@@ -130,7 +142,7 @@ int main()
         {
             int source;
             while(!get_number(source,0,dir_graph.V()-1,"Input source for Bellman-Ford: "));
-            if(dir_graph.bellman_ford(source))
+            if(dir_graph.bellman_ford(dir_graph.get_weights_with_INF(),source,true))
             {
                 dir_graph.print_destination();
                 dir_graph.print_predecessor();
@@ -162,43 +174,126 @@ int main()
         }
         case(9):
         {
-            std::vector<int>arr;
-            int Vam;
-
-            //std::cin>>Vam;
-            while(!get_number(Vam, 2, 40, "Input amount of vertex: "));
-            for(int i = 0; i<Vam-1; i++){
-                //arr.push_back(lognormal_rand_generator());
-                arr.push_back(lognormal_rand_generator());
-            }
-
-
-            /*Sorting for correct distribution*/
-            sort(arr.rbegin(),arr.rend());
-            for(int i = 0; i<Vam-1; i++){
-                std::cout<<arr[i]<<std::endl;
-            }
-
-            /*Initializing and filling the graph*/
-            //Graph dir_graph(Vam,true);
-            Graph temp_graph(Vam,true);
-            int sum_edges = 0;
-            for(int i = 0; i<Vam;i++){
-                 sum_edges+=arr[i];
-            }
-            fill_graph(temp_graph,sum_edges,arr);
-            temp_graph.set_edges_weight();
-            temp_graph.set_edges_capacity();
-            temp_graph.set_edges_costs();
-            dir_graph=temp_graph;
-            dir_graph.print_weights();
-            dir_graph.print_capacity();
-            dir_graph.print_costs();
-            break;
+             dir_graph.ford_falkerson();
+             break;
         }
         case(10):
         {
-            dir_graph.ford_falkerson();
+            dir_graph.min_cost_flow();
+            break;
+        }
+        case(11):{
+            //Prim
+            if (ostov != nullptr)
+                if (!ostov->empty())
+                    ostov->clear();
+            swap_to_unorientied(dir_graph.get_adj(),0);
+            swap_to_unorientied(dir_graph.get_weights_with_INF(),INF);
+            ostov = dir_graph.prim(dir_graph.get_adj(),dir_graph.get_weights_with_INF());
+            swap_to_orientied(dir_graph.get_adj(),0);
+            swap_to_orientied(dir_graph.get_weights_with_INF(),INF);
+            break;
+        }
+        case(12):
+        {
+            if (ostov != nullptr)
+                if (!ostov->empty())
+                    ostov->clear();
+            swap_to_unorientied(dir_graph.get_adj(),0);
+            swap_to_unorientied(dir_graph.get_weights_with_INF(),INF);
+            ostov = dir_graph.kruskal(dir_graph.get_adj(),dir_graph.get_weights_with_INF());
+            swap_to_orientied(dir_graph.get_adj(),0);
+            swap_to_orientied(dir_graph.get_weights_with_INF(),INF);
+            break;
+        }
+        case(13):{
+            swap_to_unorientied(dir_graph.get_adj(),0);
+            swap_to_unorientied(dir_graph.get_weights_with_INF(),INF);
+            init_with_INF(dir_graph.get_adj());
+            init_with_INF(dir_graph.get_weights_with_INF());
+            kirhgof(dir_graph.get_adj(),dir_graph.get_weights_with_INF());
+            init_with_null(dir_graph.get_adj());
+            init_with_null(dir_graph.get_weights_with_INF());
+            swap_to_orientied(dir_graph.get_adj(),0);
+            swap_to_orientied(dir_graph.get_weights_with_INF(),INF);
+            break;
+        }
+        case(14):
+        {
+            dir_graph.prufer_coding(ostov, prufer_code);
+            break;
+        }
+        case(15):{
+            dir_graph	.prufer_encoding(ostov,prufer_code);
+            break;
+        }
+        case(16):{
+            swap_to_unorientied(dir_graph.get_adj(),0);
+            swap_to_unorientied(dir_graph.get_weights_with_INF(),INF);
+            init_with_null(dir_graph.get_adj());
+            init_with_null(dir_graph.get_weights_with_INF());
+            if(!EulerGr.empty())
+                EulerGr.clear();
+            if(!GamGr.empty())
+                GamGr	.clear();
+            if(!path.empty())
+                path.clear();
+            EulerGr = std::vector<std::vector<int>>(dir_graph.get_adj());
+            euler_graph_true(EulerGr);
+            init_with_INF(dir_graph.get_adj());
+            init_with_INF(dir_graph.get_weights_with_INF());
+            GamGr = std::vector<std::vector<int>>(dir_graph.get_adj());
+            swap_to_orientied(dir_graph.get_adj(),0);
+            swap_to_orientied(dir_graph.get_weights_with_INF(),INF);
+            std::cout<<std::endl;
+            break;
+        }
+        case(17):{
+            swap_to_unorientied(dir_graph.get_adj(),0);
+            swap_to_unorientied(dir_graph.get_weights_with_INF(),INF);
+            init_with_null(dir_graph.get_adj());
+            init_with_null(dir_graph.get_weights_with_INF());
+            if(!EulerGr.empty()){
+                EulerGr.clear();
+            }
+            EulerGr = std::vector<std::vector<int>>(dir_graph.get_adj());
+            is_euler(EulerGr);
+            init_with_INF(dir_graph.get_adj());
+            init_with_INF(dir_graph.get_weights_with_INF());
+            swap_to_orientied(dir_graph.get_adj(),0);
+            swap_to_orientied(dir_graph.get_weights_with_INF(),INF);
+            break;
+        }
+        case(18):{
+            swap_to_unorientied(dir_graph.get_adj(),0);
+            swap_to_unorientied(dir_graph.get_weights_with_INF(),INF);
+            init_with_INF(dir_graph.get_adj());
+            init_with_INF(dir_graph.get_weights_with_INF());
+            if(!GamGr.empty())
+            { GamGr.clear(); }
+            if(!path.empty())
+            { path.clear(); }
+            GamGr = std::vector<std::vector<int>>(dir_graph.get_adj());
+            is_gam(GamGr,path);
+            init_with_null(dir_graph.get_adj());
+            init_with_null(dir_graph.get_weights_with_INF());
+            swap_to_orientied(dir_graph.get_adj(),0);
+            swap_to_orientied(dir_graph.get_weights_with_INF(),INF);
+            break;
+        }
+        case(19):{
+            if (GamGr.empty())
+            {
+                std::cout << endl;
+                std::cout << "Gamilton's graph isn't initialized\n";
+                std::cout << endl;
+            }
+            else TSP(GamGr);
+            break;
+        }
+        default:
+        {
+            std::cout<<"No operation"<<std::endl;
         }
         }
     }
