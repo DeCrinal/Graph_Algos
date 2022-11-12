@@ -1,5 +1,5 @@
 
-                                    The Graph Theory course, lab work No.1
+                                    The Graph Theory course
 
     @author: Kuznetsov A.D
     @date: 	28 March 2022
